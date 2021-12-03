@@ -14,8 +14,9 @@ const BALL_VEL_RANGE = 7;
 const BALL_TRAIL = 0.75; // 0-1
 
 const PLAYER_RAD_PROP = 0.1; // proportion of screenWidth
+const PLAYER_RAD_PROP_MAX = 0.2;
 const PLAYER_LINE_WIDTH = 4;
-const PLAYER_MAX_VEL = BALL_VEL_RANGE * 2;
+const PLAYER_VEL_MAX = BALL_VEL_RANGE * 2;
 
 let player = null;
 let score = 0;
@@ -169,23 +170,26 @@ class PlayerBall extends Ball {
   accelerate(dir) {
     switch (dir) {
       case 'up':
-        if (-this.velY < PLAYER_MAX_VEL) player.velY--;
+        if (-this.velY < PLAYER_VEL_MAX) player.velY--;
         break;
       case 'down':
-        if (this.velY < PLAYER_MAX_VEL) player.velY++;
+        if (this.velY < PLAYER_VEL_MAX) player.velY++;
         break;
       case 'left':
-        if (-this.velX < PLAYER_MAX_VEL) player.velX--;
+        if (-this.velX < PLAYER_VEL_MAX) player.velX--;
         break;
       case 'right':
-        if (this.velX < PLAYER_MAX_VEL) player.velX++;
+        if (this.velX < PLAYER_VEL_MAX) player.velX++;
         break;
     }
   }
 
   handleBallCollision(otherBall) {
+    // 'Destroy' otherBall & increase score
     otherBall.exists = false;
     score++;
+    // Grow up to max size
+    if (this.radius < (screenWidth * PLAYER_RAD_PROP_MAX) / 2) this.radius++;
   }
 }
 
@@ -295,10 +299,19 @@ window.onload = () => {
   init();
 };
 
+// Track attempts to resize window...
+// Limit to 1 change every 200ms
+let resizeCalls = 0;
 window.onresize = () => {
-  window.cancelAnimationFrame(lastFrame);
-  score = 0;
-  init();
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, screenWidth, screenHeight);
+  if (resizeCalls === 0) {
+    window.cancelAnimationFrame(lastFrame);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, screenWidth, screenHeight);
+    score = 0;
+    init();
+    setTimeout(() => {
+      resizeCalls = 0;
+    }, 200);
+  }
+  resizeCalls++;
 };
