@@ -10,15 +10,14 @@ let lastFrame = null;
 const BALL_COUNT = 25;
 const BALL_RAD_MIN = 10;
 const BALL_RAD_MAX = 25;
-const BALL_VEL_RANGE = 10;
-const BALL_TRAIL = 0.7; // 0-1
+const BALL_VEL_RANGE = 7;
+const BALL_TRAIL = 0.75; // 0-1
 
-const PLAYER_RAD_PROP = 0.05; // proportion of screenWidth
+const PLAYER_RAD_PROP = 0.1; // proportion of screenWidth
 const PLAYER_LINE_WIDTH = 4;
 const PLAYER_MAX_VEL = BALL_VEL_RANGE * 2;
 
 let player = null;
-let round = 1;
 let score = 0;
 
 // Generic Ball
@@ -108,14 +107,26 @@ class Ball {
 
   handleEdgeCollision() {
     // Bounce by default (reverse velocity in each axis)
+    // This works by checking if still going in direction of edge and reversing it if so
+    // Before, I was simply reversing direction upon edge collision...
+    // but balls could get stuck over there, basically vibrating as they...
+    // get in a velocity-reverse-loop
     switch (this.detectEdgeCollision()) {
       case 'left':
+        // If still going left, reverse
+        if (this.velX < 0) this.velX = -this.velX;
+        break;
       case 'right':
-        this.velX = -this.velX;
+        // If still going right, reverse
+        if (this.velX > 0) this.velX = -this.velX;
         break;
       case 'top':
+        // If still going up, reverse
+        if (this.velY < 0) this.velY = -this.velY;
+        break;
       case 'bottom':
-        this.velY = -this.velY;
+        // If still going down, reverse
+        if (this.velY > 0) this.velY = -this.velY;
         break;
       default:
         break;
@@ -182,7 +193,7 @@ function init() {
   // Calculate dimensions for canvas
   calcDimensions();
 
-  // Reset Ball.balls
+  score = 0;
   Ball.balls = [];
 
   // Populate Ball.balls array
@@ -215,15 +226,19 @@ function init() {
     // Move player
     switch (e.key) {
       case 'w':
+      case 'ArrowUp':
         player.accelerate('up');
         break;
       case 's':
+      case 'ArrowDown':
         player.accelerate('down');
         break;
       case 'a':
+      case 'ArrowLeft':
         player.accelerate('left');
         break;
       case 'd':
+      case 'ArrowRight':
         player.accelerate('right');
         break;
     }
@@ -251,11 +266,10 @@ function loop() {
   scoreElement.textContent = score;
 
   // Check if won
-  if (score === Ball.balls.length * round) {
-    // Halt loop, alert player, increment round, reset game
+  if (score === Ball.balls.length) {
+    // Halt loop, alert player, reset game
     window.cancelAnimationFrame(lastFrame);
     alert('You won!');
-    round++;
     return init();
   }
 
@@ -279,4 +293,12 @@ function calcDimensions() {
 // Entry point
 window.onload = () => {
   init();
+};
+
+window.onresize = () => {
+  window.cancelAnimationFrame(lastFrame);
+  score = 0;
+  init();
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, screenWidth, screenHeight);
 };
