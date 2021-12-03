@@ -301,17 +301,23 @@ window.onload = () => {
 
 // Track attempts to resize window...
 // Limit to 1 change every 200ms
-let resizeCalls = 0;
+const RESIZE_CALL_DELTA = 200; // ms
+let justResized = false;
 window.onresize = () => {
-  if (resizeCalls === 0) {
+  // Limit frequency of executing resize logic...
+  // (To prevent screen flashes)
+  if (!justResized) {
+    // Stop game looping mechanism
     window.cancelAnimationFrame(lastFrame);
+    // Hide rendering
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, screenWidth, screenHeight);
-    score = 0;
-    init();
+    // Wait given amount of time before resetting game...
+    // And re-allowing resize logic
     setTimeout(() => {
-      resizeCalls = 0;
-    }, 200);
+      init();
+      justResized = false;
+    }, RESIZE_CALL_DELTA);
   }
-  resizeCalls++;
+  justResized = true;
 };
