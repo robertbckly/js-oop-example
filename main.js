@@ -7,7 +7,7 @@ let screenWidth = 0;
 let screenHeight = 0;
 let lastFrame = null;
 
-const BALL_COUNT = 25;
+const BALL_COUNT = 50;
 const BALL_RAD_MIN = 10;
 const BALL_RAD_MAX = 25;
 const BALL_VEL_RANGE = 7;
@@ -15,8 +15,8 @@ const BALL_TRAIL = 0.75; // 0-1
 
 const PLAYER_RAD_PROP = 0.1; // proportion of screenWidth
 const PLAYER_RAD_PROP_MAX = 0.2;
-const PLAYER_LINE_WIDTH = 4;
-const PLAYER_VEL_MAX = BALL_VEL_RANGE * 2;
+const PLAYER_VEL_MAX = BALL_VEL_RANGE;
+const PLAYER_LINE_WIDTH = PLAYER_VEL_MAX; // ensures smoother trail
 
 let player = null;
 let score = 0;
