@@ -1,13 +1,13 @@
+'use strict';
+
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
-
-const scoreElement = document.querySelector('.score');
 
 let screenWidth = 0;
 let screenHeight = 0;
 let lastFrame = null;
 
-const BALL_COUNT = 50;
+const BALL_COUNT = 25;
 const BALL_RAD_MIN = 10;
 const BALL_RAD_MAX = 25;
 const BALL_VEL_RANGE = 7;
@@ -19,6 +19,8 @@ const PLAYER_VEL_MAX = BALL_VEL_RANGE;
 const PLAYER_LINE_WIDTH = PLAYER_VEL_MAX; // ensures smoother trail
 
 let player = null;
+let playerCollisionCount = 0;
+let playTime = 1;
 let score = 0;
 
 // Generic Ball
@@ -165,6 +167,9 @@ class PlayerBall extends Ball {
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
     ctx.stroke();
+
+    // In draw() bc I don't want to override update()
+    score = (playTime / playerCollisionCount) * 1000;
   }
 
   accelerate(dir) {
@@ -185,9 +190,9 @@ class PlayerBall extends Ball {
   }
 
   handleBallCollision(otherBall) {
-    // 'Destroy' otherBall & increase score
+    // 'Destroy' otherBall & decrease score (aim is to avoid)
     otherBall.exists = false;
-    score++;
+    playerCollisionCount++;
     // Grow up to max size
     if (this.radius < (screenWidth * PLAYER_RAD_PROP_MAX) / 2) this.radius++;
   }
@@ -266,18 +271,7 @@ function loop() {
   // Update player
   player.update();
 
-  // Update score
-  scoreElement.textContent = score;
-
-  // Check if won
-  if (score === Ball.balls.length) {
-    // Halt loop, alert player, reset game
-    window.cancelAnimationFrame(lastFrame);
-    alert('You won!');
-    return init();
-  }
-
-  // Invoke next loop
+  // Recursively invoke next loop
   lastFrame = window.requestAnimationFrame(loop);
 }
 
